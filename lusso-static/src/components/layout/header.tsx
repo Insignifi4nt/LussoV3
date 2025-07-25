@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { getSemanticColor, getSpacing, getBorderRadius, createTransition } from '@/lib/design-system';
 
 interface GlassmorphismHeaderProps {
@@ -9,11 +9,26 @@ interface GlassmorphismHeaderProps {
   className?: string;
 }
 
-export const Header: React.FC<GlassmorphismHeaderProps> = ({ 
-  title = "LUSSO", 
+export const Header: React.FC<GlassmorphismHeaderProps> = ({
+  title = "LUSSO",
   children,
-  className = "" 
+  className = ""
 }) => {
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const handleMove = (e: MouseEvent) => {
+      const rect = header.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      header.style.setProperty('--spec-x', `${x}px`);
+      header.style.setProperty('--spec-y', `${y}px`);
+    };
+    header.addEventListener('mousemove', handleMove);
+    return () => header.removeEventListener('mousemove', handleMove);
+  }, []);
   const headerStyles: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -22,10 +37,10 @@ export const Header: React.FC<GlassmorphismHeaderProps> = ({
     zIndex: 50,
     width: 'calc(100% - 2rem)',
     padding: `${getSpacing('4')} ${getSpacing('6')}`,
-    backdropFilter: 'brightness(1.05) blur(16px) url(#liquidDisplacementFilter)',
-    WebkitBackdropFilter: 'brightness(1.05) blur(16px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    border: '1px solid rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'brightness(1.05) blur(16px) saturate(1.8) url(#liquidDisplacementFilter)',
+    WebkitBackdropFilter: 'brightness(1.05) blur(16px) saturate(1.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     borderRadius: getBorderRadius('lg'),
     margin: getSpacing('4'),
     boxShadow: `
@@ -94,7 +109,8 @@ export const Header: React.FC<GlassmorphismHeaderProps> = ({
       </svg>
 
       {/* Glassmorphism Header */}
-      <header 
+      <header
+        ref={headerRef}
         style={headerStyles}
         className={`glassmorphism-header ${className}`}
       >
@@ -118,14 +134,13 @@ export const Header: React.FC<GlassmorphismHeaderProps> = ({
               inset: 0;
               z-index: 0;
               border-radius: ${getBorderRadius('lg')};
-              background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.3) 0%,
-                rgba(255, 255, 255, 0.1) 30%,
-                rgba(255, 255, 255, 0.15) 70%,
-                rgba(255, 255, 255, 0.25) 100%
-              );
+              background-image:
+                radial-gradient(circle at var(--spec-x,50%) var(--spec-y,0%), rgba(255,255,255,0.15), rgba(255,255,255,0) 60%),
+                url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAAAAACo4kLRAAABr0lEQVR4nAGkAVv+AO2aSTQXRsMS4XhRiPMIcmkKAsVLAoGu01HYS/Tf9wB1jc4vHsAz1csxANjpYua16gclGsdpRZOWyh8yXg7lApjaVXtmJNtQAVI0fr7qUsZTDRFAAMDPA2Z1Moa6Ao3D+t0k4LtG1+u3AQlKLcBoq+Q3PXNGIvnBllr/bpQRAhVBeMrc4WpQF8izbvMb/MZJqh00APhvspQ07KM+iAKlJHoaHPY2tsO5BC3ypgzu+XY8WutF+uIqNuFk2cBKBC/lmmVwpwCs3eec2+X3GnkAIgMuBK8YxKfkYGO7+IcoWTnUVPwI2wvZAia3LgSttLGnCed2KjK8++WjD8CUAeprVYFOvl3+QuPbtiwXI7f/OXmmAeAuZ3tJnq2bAccQ9Exc9p5VBCj8APnYgQG51Pd/9xjoNmwXL3tXFjKEAjAS+H5SBYW8ZRnE97Ee/Zf3t7fTAkRpPwiIOlDtd3whdb70+uzK/hc8ABTi/hKjaFOAApshQEsinjylvClyAKsEHcy++1eKC2NMIrFBLYskCRL1ApjiVBvzI4Uq0PdKA8+1fbxjAxI3R9nFzDio2/gAAAAASUVORK5CYII=');
+              background-size: cover;
+              mix-blend-mode: overlay;
               backdrop-filter: blur(1px) saturate(1.1);
+              pointer-events: none;
             }
 
             .glassmorphism-header::after {
@@ -145,8 +160,8 @@ export const Header: React.FC<GlassmorphismHeaderProps> = ({
 
             .glassmorphism-header:hover {
               transform: translateY(-0.5px);
-              background-color: rgba(255, 255, 255, 0.3);
-              backdrop-filter: brightness(1.08) blur(20px) url(#liquidDisplacementFilter);
+              background-color: rgba(255, 255, 255, 0.25);
+              backdrop-filter: brightness(1.08) blur(20px) saturate(1.8) url(#liquidDisplacementFilter);
               box-shadow: 
                 inset 2px 2px 0px -2px rgba(255, 255, 255, 0.9),
                 inset 0 0 16px 3px rgba(255, 255, 255, 0.5),
@@ -155,18 +170,14 @@ export const Header: React.FC<GlassmorphismHeaderProps> = ({
             }
 
             [data-theme="dark"] .glassmorphism-header {
-              background-color: rgba(0, 0, 0, 0.35) !important;
+              background-color: rgba(0, 0, 0, 0.3) !important;
               border-color: rgba(255, 255, 255, 0.2) !important;
             }
 
             [data-theme="dark"] .glassmorphism-header::before {
-              background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.15) 0%,
-                rgba(255, 255, 255, 0.05) 30%,
-                rgba(255, 255, 255, 0.08) 70%,
-                rgba(255, 255, 255, 0.12) 100%
-              ) !important;
+              background-image:
+                radial-gradient(circle at var(--spec-x,50%) var(--spec-y,0%), rgba(255,255,255,0.08), rgba(255,255,255,0) 60%),
+                url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAAAAACo4kLRAAABr0lEQVR4nAGkAVv+AO2aSTQXRsMS4XhRiPMIcmkKAsVLAoGu01HYS/Tf9wB1jc4vHsAz1csxANjpYua16gclGsdpRZOWyh8yXg7lApjaVXtmJNtQAVI0fr7qUsZTDRFAAMDPA2Z1Moa6Ao3D+t0k4LtG1+u3AQlKLcBoq+Q3PXNGIvnBllr/bpQRAhVBeMrc4WpQF8izbvMb/MZJqh00APhvspQ07KM+iAKlJHoaHPY2tsO5BC3ypgzu+XY8WutF+uIqNuFk2cBKBC/lmmVwpwCs3eec2+X3GnkAIgMuBK8YxKfkYGO7+IcoWTnUVPwI2wvZAia3LgSttLGnCed2KjK8++WjD8CUAeprVYFOvl3+QuPbtiwXI7f/OXmmAeAuZ3tJnq2bAccQ9Exc9p5VBCj8APnYgQG51Pd/9xjoNmwXL3tXFjKEAjAS+H5SBYW8ZRnE97Ee/Zf3t7fTAkRpPwiIOlDtd3whdb70+uzK/hc8ABTi/hKjaFOAApshQEsinjylvClyAKsEHcy++1eKC2NMIrFBLYskCRL1ApjiVBvzI4Uq0PdKA8+1fbxjAxI3R9nFzDio2/gAAAAASUVORK5CYII=') !important;
             }
 
             [data-theme="dark"] .glassmorphism-header::after {
@@ -179,12 +190,13 @@ export const Header: React.FC<GlassmorphismHeaderProps> = ({
             }
 
             [data-theme="dark"] .glassmorphism-header:hover {
-              background-color: rgba(0, 0, 0, 0.4) !important;
-              box-shadow: 
+              background-color: rgba(0, 0, 0, 0.35) !important;
+              box-shadow:
                 inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
                 inset 0 0 16px 3px rgba(255, 255, 255, 0.25),
                 0 16px 48px rgba(0, 0, 0, 0.4),
                 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+              backdrop-filter: brightness(1.08) blur(20px) saturate(1.8) url(#liquidDisplacementFilter);
             }
 
             @media (max-width: 768px) {
